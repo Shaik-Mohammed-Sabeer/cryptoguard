@@ -9,4 +9,4 @@
 //
 // ════════════════════════════════════════════════════════════
 
-window.__CRYPTOGUARD_API__ = 'https://cryptoguard-api.onrender.com';
+window.__CRYPTOGUARD_API__ = 'https://cryptoguard-7ffd.onrender.com';
