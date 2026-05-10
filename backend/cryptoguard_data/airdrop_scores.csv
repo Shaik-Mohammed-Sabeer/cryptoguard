@@ -1,0 +1,13 @@
+protocol,airdrop_conducted,lr_probability,xgb_probability,ensemble_probability,rank,top_features
+arbitrum,1,0.9326711242188336,0.72573876,0.8292049440140188,1,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+ens,1,0.89730771691149,0.72573876,0.8115232403603471,2,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+gitcoin,1,0.8765665755973217,0.72573876,0.8011526697032629,3,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+hop-protocol,1,0.4082450883015892,0.72573876,0.5669919260553966,4,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+benqi-lending,0,0.35928945917408645,0.27426127,0.3167753625836024,5,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+synapse,0,0.14723657947658828,0.27426127,0.2107489227348533,6,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+convex-finance,0,0.13294092065395982,0.27426127,0.20360109332353904,7,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+stargate,0,0.1174420247961901,0.27426127,0.1958516453946542,8,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+lido,0,0.08980649321013194,0.27426127,0.18203387960162512,9,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+sushiswap,0,0.03535048197654005,0.27426127,0.15480587398482917,10,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+yearn-finance,0,1.0149216712531765e-13,0.27426127,0.13713063299660988,11,"['tvl_usd_m', 'multi_chain', 'tvl_log']"
+curve-dex,0,3.191719992164353e-113,0.27426127,0.13713063299655914,12,"['tvl_usd_m', 'multi_chain', 'tvl_log']"

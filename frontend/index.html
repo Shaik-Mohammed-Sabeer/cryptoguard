@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoGuard — Dashboard</title>
+    <meta name="description" content="CryptoGuard: Unified Decision Support System for Crypto Market Risk Detection and Airdrop Intelligence.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .connection-status { display:none; padding:4px 12px; border-radius:100px; font-size:0.72rem; font-weight:600; margin-left:12px; animation:pulse 1.5s infinite; }
+        .connection-status.connecting { background:rgba(245,158,11,0.15); color:#f59e0b; }
+        .connection-status.error { background:rgba(239,68,68,0.15); color:#ef4444; animation:none; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    </style>
+</head>
+<body>
+
+    <!-- ══════════ Top Navigation Bar ══════════ -->
+    <nav class="top-nav" id="top-nav">
+        <div class="nav-left">
+            <button class="nav-back" id="nav-back" title="Back to Dashboard">←</button>
+            <h1 class="nav-title" id="nav-title">Dashboard</h1>
+            <span class="connection-status" id="connection-status"></span>
+        </div>
+        <div class="nav-tabs">
+            <a href="#" class="nav-tab" data-page="portfolio" id="tab-portfolio">Portfolio</a>
+            <a href="#" class="nav-tab" data-page="airdrops" id="tab-airdrops">Airdrops</a>
+            <a href="#" class="nav-tab" data-page="strategy" id="tab-strategy">Strategy</a>
+            <a href="#" class="nav-tab" data-page="education" id="tab-education">Education</a>
+        </div>
+    </nav>
+
+    <!-- ══════════ PAGE: Dashboard (Main) ══════════ -->
+    <main class="page active" id="page-dashboard">
+
+        <!-- ── Top KPI Row ── -->
+        <div class="kpi-row">
+            <!-- Card 1: Market Stress Index -->
+            <div class="kpi-card stress-card" id="card-stress">
+                <div class="kpi-card-top">
+                    <span class="kpi-label">Market Stress Index</span>
+                    <span class="kpi-icon stress-icon" id="stress-icon">📈</span>
+                </div>
+                <div class="kpi-big-value" id="stress-value">—</div>
+                <div class="kpi-regime">Regime: <span class="regime-badge" id="regime-label">—</span></div>
+                <div class="kpi-detail" id="stress-details">
+                    <span>BTC 24h: <span id="btc-24h">—</span></span>
+                    <span>ETH 24h: <span id="eth-24h">—</span></span>
+                </div>
+            </div>
+
+            <!-- Card 2: Portfolio Health -->
+            <div class="kpi-card health-card" id="card-health">
+                <div class="kpi-card-top">
+                    <span class="kpi-label">Portfolio Health</span>
+                    <span class="kpi-icon health-icon">🛡️</span>
+                </div>
+                <div class="kpi-big-value health-value" id="health-value">—</div>
+                <p class="kpi-sub-text">Monitor your portfolio risk</p>
+                <div class="wallet-input-row" id="wallet-input-mini">
+                    <input type="text" class="wallet-input" id="wallet-address-mini" placeholder="Enter wallet address (0x...)" spellcheck="false">
+                    <button class="btn-wallet-go" id="btn-analyze-wallet" title="Analyze">→</button>
+                </div>
+            </div>
+
+            <!-- Card 3: Quick Actions -->
+            <div class="kpi-card actions-card" id="card-actions">
+                <div class="kpi-card-top">
+                    <span class="kpi-icon">⚠️</span>
+                    <h3 class="actions-title">Quick Actions</h3>
+                </div>
+                <div class="actions-grid">
+                    <button class="action-btn action-risk" id="btn-analyze-risk">
+                        <span class="action-icon">🔍</span> Analyze Risk
+                    </button>
+                    <button class="action-btn action-airdrops" id="btn-browse-airdrops">
+                        <span class="action-icon">🎯</span> Browse Airdrops
+                    </button>
+                    <button class="action-btn action-strategy" id="btn-get-strategy">
+                        <span class="action-icon">📊</span> Get Strategy
+                    </button>
+                    <button class="action-btn action-learn" id="btn-learn-more">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Airdrop Opportunities Table ── -->
+        <div class="table-section" id="airdrop-section">
+            <div class="table-title-row">
+                <h2 class="section-title">Top Airdrop Opportunities</h2>
+                <a href="#" class="view-all-link" id="link-view-all">View All</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table" id="airdrop-table">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            <th>Chain</th>
+                            <th>Funding</th>
+                            <th>Opportunity Score</th>
+                            <th>Likelihood</th>
+                            <th>Risk</th>
+                        </tr>
+                    </thead>
+                    <tbody id="airdrop-tbody">
+                        <tr><td colspan="6" class="loading-cell">Loading airdrop data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══════════ PAGE: Portfolio ══════════ -->
+    <main class="page" id="page-portfolio">
+        <div class="page-header">
+            <h2>Portfolio Analysis</h2>
+            <p class="page-subtitle">Enter your Web3 wallet address to get personalized risk analysis &amp; market suggestions</p>
+        </div>
+
+        <!-- Wallet Input Section -->
+        <div class="wallet-section" id="wallet-section">
+            <div class="wallet-input-card">
+                <div class="wallet-input-icon">🔗</div>
+                <div class="wallet-input-body">
+                    <h3>Connect Your Wallet</h3>
+                    <p>Enter your Ethereum wallet address to analyze your portfolio against current market conditions</p>
+                    <div class="wallet-form">
+                        <input type="text" class="wallet-input-full" id="wallet-address-full" placeholder="0x742d35Cc6634C0532925a3b844Bc9e7595f2bD38" spellcheck="false">
+                        <button class="btn-analyze" id="btn-wallet-analyze">
+                            <span class="btn-analyze-text">Analyze Portfolio</span>
+                            <span class="btn-analyze-spinner hidden" id="wallet-spinner">⏳</span>
+                        </button>
+                    </div>
+                    <p class="wallet-note">Supports Ethereum (ERC-20) wallets • Data from Ethplorer API • Read-only, no wallet connection needed</p>
+                </div>
+            </div>
+            <div class="wallet-error hidden" id="wallet-error"></div>
+        </div>
+
+        <!-- Portfolio Results (hidden until wallet analyzed) -->
+        <div class="portfolio-results hidden" id="portfolio-results">
+
+            <!-- Connected Wallet Badge -->
+            <div class="wallet-badge" id="wallet-badge">
+                <span class="wallet-badge-icon">🟢</span>
+                <span class="wallet-badge-address" id="wallet-display-addr">0x...</span>
+                <button class="btn-disconnect" id="btn-disconnect" title="Analyze a different wallet">✕</button>
+            </div>
+
+            <!-- Portfolio KPIs -->
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-card-top"><span class="kpi-label">Portfolio Value</span></div>
+                    <div class="kpi-big-value" id="p-total-value" style="color:#2dd4a8;">$0</div>
+                    <div class="kpi-sub-text" id="p-token-count">0 tokens</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-card-top"><span class="kpi-label">ETH Balance</span></div>
+                    <div class="kpi-big-value" id="p-eth-balance" style="color:#627eea;">0 ETH</div>
+                    <div class="kpi-sub-text" id="p-eth-value">$0 USD</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-card-top"><span class="kpi-label">Risk Assessment</span></div>
+                    <div class="kpi-big-value" id="p-risk-assessment" style="color:#f59e0b;">—</div>
+                    <div class="kpi-sub-text" id="p-risk-detail">Based on ML pipeline</div>
+                </div>
+            </div>
+
+            <!-- Market Scenario Banner -->
+            <div class="market-scenario-card" id="market-scenario-card">
+                <div class="scenario-header">
+                    <span class="scenario-icon">🌍</span>
+                    <h3>Current Market Scenario</h3>
+                </div>
+                <div class="scenario-body">
+                    <div class="scenario-grid">
+                        <div class="scenario-item">
+                            <span class="scenario-label">Market Regime</span>
+                            <span class="scenario-value" id="scn-regime">—</span>
+                        </div>
+                        <div class="scenario-item">
+                            <span class="scenario-label">Risk Score</span>
+                            <span class="scenario-value" id="scn-risk">—</span>
+                        </div>
+                        <div class="scenario-item">
+                            <span class="scenario-label">Anomaly Level</span>
+                            <span class="scenario-value" id="scn-anomaly">—</span>
+                        </div>
+                        <div class="scenario-item">
+                            <span class="scenario-label">Allocation Tier</span>
+                            <span class="scenario-value" id="scn-tier">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personalized Suggestions -->
+            <div class="suggestions-card" id="suggestions-card">
+                <div class="suggestions-header">
+                    <span class="suggestions-icon">💡</span>
+                    <h3>Personalized Suggestions</h3>
+                </div>
+                <div class="suggestions-list" id="suggestions-list">
+                    <div class="suggestion-item">Loading suggestions...</div>
+                </div>
+            </div>
+
+            <!-- Holdings Table -->
+            <div class="table-section">
+                <div class="table-title-row">
+                    <h2 class="section-title">Token Holdings</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="holdings-table">
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Balance</th>
+                                <th>Price (USD)</th>
+                                <th>Value (USD)</th>
+                                <th>Portfolio %</th>
+                                <th>24h Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdings-tbody">
+                            <tr><td colspan="6" class="loading-cell">No wallet connected</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Portfolio Allocation Chart -->
+            <div class="chart-section two-col">
+                <div class="chart-card">
+                    <div class="chart-card-header"><h3>Portfolio Allocation</h3></div>
+                    <div class="chart-body"><canvas id="chart-portfolio-alloc"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-header"><h3>Token Prices (USD)</h3>
+                        <div class="chart-chips">
+                            <button class="chip active" data-days="30" data-target="prices">30D</button>
+                            <button class="chip" data-days="90" data-target="prices">90D</button>
+                            <button class="chip" data-days="365" data-target="prices">1Y</button>
+                        </div>
+                    </div>
+                    <div class="chart-body"><canvas id="chart-prices"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══════════ PAGE: Airdrops ══════════ -->
+    <main class="page" id="page-airdrops">
+        <div class="page-header">
+            <h2>Airdrop Intelligence</h2>
+            <p class="page-subtitle">Protocol rankings from real DeFiLlama data — Logistic Regression + XGBoost ensemble</p>
+        </div>
+
+        <!-- Search -->
+        <div class="search-row">
+            <input type="text" class="search-input" id="full-airdrop-search" placeholder="Search protocols...">
+        </div>
+
+        <!-- Full Table -->
+        <div class="table-section">
+            <div class="table-wrapper">
+                <table class="data-table" id="full-airdrop-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Project</th>
+                            <th>Ensemble Probability</th>
+                            <th>LR Score</th>
+                            <th>XGBoost Score</th>
+                            <th>Airdrop Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="full-airdrop-tbody">
+                        <tr><td colspan="6" class="loading-cell">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Probability Chart -->
+        <div class="chart-section">
+            <div class="chart-card full-width">
+                <div class="chart-card-header"><h3>Airdrop Probability Distribution</h3></div>
+                <div class="chart-body chart-body-tall"><canvas id="chart-airdrop-full"></canvas></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══════════ PAGE: Strategy ══════════ -->
+    <main class="page" id="page-strategy">
+        <div class="page-header">
+            <h2>Risk Strategy &amp; Advisory</h2>
+            <p class="page-subtitle">Composite risk score, market regime, and 6-tier capital allocation</p>
+        </div>
+
+        <!-- Strategy KPI -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-card-top"><span class="kpi-label">Composite Risk</span></div>
+                <div class="kpi-big-value" id="s-risk-score" style="color:#ef4444;">—</div>
+                <div class="risk-bar"><div class="risk-bar-fill" id="s-risk-bar"></div></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-top"><span class="kpi-label">Allocation Tier</span></div>
+                <div class="kpi-big-value" id="s-tier" style="color:#f59e0b;">—</div>
+                <div class="kpi-sub-text" id="s-tier-name">—</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-card-top"><span class="kpi-label">Market Regime</span></div>
+                <div class="kpi-big-value" id="s-regime" style="color:#06b6d4;">—</div>
+                <div class="kpi-sub-text" id="s-regime-score">Score: —</div>
+            </div>
+        </div>
+
+        <!-- Advisory Banner -->
+        <div class="advisory-banner" id="s-advisory-banner">
+            <div class="advisory-icon-big">🎯</div>
+            <div class="advisory-body">
+                <h3 id="s-advisory-title">Loading advisory...</h3>
+                <p id="s-advisory-text">Fetching latest recommendation...</p>
+            </div>
+        </div>
+
+        <!-- Tier Guide -->
+        <div class="tier-guide-section">
+            <h3>Capital Allocation Tiers</h3>
+            <div class="tier-row">
+                <div class="tier-card t1"><span class="t-num">1</span><div><strong>Strong Allocation</strong><br><small>80–100% crypto</small></div></div>
+                <div class="tier-card t2"><span class="t-num">2</span><div><strong>Maintain Positions</strong><br><small>Hold steady</small></div></div>
+                <div class="tier-card t3"><span class="t-num">3</span><div><strong>Partial Rebalance</strong><br><small>Reduce exposure</small></div></div>
+                <div class="tier-card t4"><span class="t-num">4</span><div><strong>Reduce Positions</strong><br><small>Increase hedging</small></div></div>
+                <div class="tier-card t5"><span class="t-num">5</span><div><strong>Defensive</strong><br><small>Minimize exposure</small></div></div>
+                <div class="tier-card t6"><span class="t-num">6</span><div><strong>Capital Preservation</strong><br><small>Near-full exit</small></div></div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="chart-section two-col">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h3>Risk Score Timeline</h3>
+                    <div class="chart-chips">
+                        <button class="chip active" data-days="30" data-target="risk">30D</button>
+                        <button class="chip" data-days="90" data-target="risk">90D</button>
+                        <button class="chip" data-days="365" data-target="risk">1Y</button>
+                    </div>
+                </div>
+                <div class="chart-body"><canvas id="chart-risk"></canvas></div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-card-header"><h3>Risk Components</h3></div>
+                <div class="chart-body"><canvas id="chart-components"></canvas></div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-card full-width">
+                <div class="chart-card-header"><h3>Market Regime Score</h3></div>
+                <div class="chart-body"><canvas id="chart-regime"></canvas></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ══════════ PAGE: Education ══════════ -->
+    <main class="page" id="page-education">
+        <div class="page-header">
+            <h2>How CryptoGuard Works</h2>
+            <p class="page-subtitle">Understanding the 6-layer ML pipeline</p>
+        </div>
+
+        <div class="edu-grid">
+            <div class="edu-card">
+                <div class="edu-num">1</div>
+                <h3>Data Collection</h3>
+                <p>Real market data from <strong>CoinGecko</strong> (OHLCV, market cap) and <strong>DeFiLlama</strong> (TVL, protocol metrics). No synthetic or proxy features — all data is real and honestly labeled.</p>
+                <div class="edu-tags"><span class="edu-tag">CoinGecko API</span><span class="edu-tag">DeFiLlama API</span></div>
+            </div>
+            <div class="edu-card">
+                <div class="edu-num">2</div>
+                <h3>Anomaly Detection</h3>
+                <p><strong>K-Means Clustering</strong> identifies market states (Calm, Volatile, Stressed). <strong>Isolation Forest</strong> computes anomaly scores to flag unusual market conditions.</p>
+                <div class="edu-tags"><span class="edu-tag">K-Means</span><span class="edu-tag">Isolation Forest</span></div>
+            </div>
+            <div class="edu-card">
+                <div class="edu-num">3</div>
+                <h3>Market Regime Detection</h3>
+                <p><strong>Gaussian HMM</strong> discovers hidden market states. <strong>XGBoost</strong> classifies regimes into Bull, Bear, or Sideways. A blended score combines both models (α = 0.45).</p>
+                <div class="edu-tags"><span class="edu-tag">HMM</span><span class="edu-tag">XGBoost</span></div>
+            </div>
+            <div class="edu-card">
+                <div class="edu-num">4</div>
+                <h3>Airdrop Prediction</h3>
+                <p>Protocol data from DeFiLlama is fed into <strong>Logistic Regression</strong> and <strong>XGBoost</strong> classifiers (with SMOTE) to predict airdrop probability.</p>
+                <div class="edu-tags"><span class="edu-tag">Logistic Regression</span><span class="edu-tag">SMOTE</span></div>
+            </div>
+            <div class="edu-card">
+                <div class="edu-num">5</div>
+                <h3>Decision Advisory</h3>
+                <p>A composite risk score combines anomaly intensity (40%), regime risk (35%), drawdown (15%), and volatility (10%). This maps to a <strong>6-tier capital allocation</strong> advisory.</p>
+                <div class="edu-tags"><span class="edu-tag">Risk Score</span><span class="edu-tag">6-Tier Advisory</span></div>
+            </div>
+            <div class="edu-card">
+                <div class="edu-num">6</div>
+                <h3>Deployment</h3>
+                <p>The entire pipeline is served via a <strong>FastAPI</strong> REST API and this interactive web dashboard. All data is updated by re-running the pipeline scripts.</p>
+                <div class="edu-tags"><span class="edu-tag">FastAPI</span><span class="edu-tag">Chart.js</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
